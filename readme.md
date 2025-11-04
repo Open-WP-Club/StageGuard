@@ -6,16 +6,23 @@ StageGuard is a WordPress plugin designed to clearly indicate and manage a stagi
 
 ## Features
 
-- Displays a prominent message in the admin panel and on the frontend indicating a staging environment - only if WooCommerce is not installed 
-- Automatically deactivates specific plugins.
-- Prevents activation of certain plugins and provides a custom error message.
-- Activates Coming Soon mode for WooCommerce (if installed).
-- Modifies search engine visibility settings.
-- Provides password protection for the staging site.
-- Offers IP restriction capabilities.
-- Modifies robots.txt to discourage search engine indexing.
-- Catches and logs emails sent from the staging environment.
-- Includes WP-CLI commands for managing the plugin.
+- Displays a prominent message in the admin panel and on the frontend indicating a staging environment - only if WooCommerce is not installed
+- Automatically deactivates specific plugins on staging environments
+- Prevents activation of certain plugins and provides a custom error message
+- Activates Coming Soon mode for WooCommerce (if installed)
+- Modifies search engine visibility settings
+- Provides password protection for the staging site (redirects to WordPress login)
+- **Advanced IP restriction with multiple formats:**
+  - Individual IP addresses (e.g., `192.168.1.1`)
+  - CIDR notation for IP ranges (e.g., `192.168.1.0/24`)
+  - IP address ranges (e.g., `192.168.1.1-192.168.1.10`)
+  - Supports both IPv4 and IPv6
+  - Automatic localhost whitelisting for safety
+  - Smart proxy header detection (X-Forwarded-For, X-Real-IP)
+- Filters robots.txt to discourage search engine indexing (no physical file modification)
+- Catches and logs emails sent from the staging environment
+- Includes WP-CLI commands for managing the plugin
+- Clean, modular architecture with separated concerns
 
 ## Deactivated Plugins
 
@@ -55,10 +62,26 @@ StageGuard will deactivate the following plugins:
 
 ## Configuration
 
-1. **Debug Mode**: Toggle WordPress debug mode on or off.
-2. **Password Protection**: Enable to redirect non-logged-in users to the WordPress login page.
-3. **IP Restriction**: Enable and specify allowed IP addresses to restrict access to the staging site.
-4. **Allowed IPs**: Enter the IP addresses that should have access to the staging site (one per line).
+Navigate to **Settings > StageGuard** in your WordPress admin panel to configure:
+
+### 1. Debug Mode
+Toggle WordPress debug mode on or off. When enabled, WP_DEBUG constant will be set to true in wp-config.php.
+
+### 2. Password Protection
+Enable to redirect non-logged-in users to the WordPress login page. This ensures only authenticated users can access the staging site.
+
+### 3. IP Restriction
+Enable IP-based access control to restrict who can view the staging site.
+
+### 4. Allowed IPs
+Specify IP addresses that should have access to the staging site. Supports multiple formats:
+
+- **Individual IPs**: `192.168.1.1` (one per line)
+- **CIDR Notation**: `192.168.1.0/24` (allows entire subnet)
+- **IP Ranges**: `192.168.1.1-192.168.1.10` (allows range of IPs)
+- **IPv6 Support**: `2001:db8::1` or `2001:db8::/32`
+
+The system automatically whitelists `127.0.0.1` and `::1` (localhost) for safety. Your current IP address is displayed in the settings page for convenience.
 
 ## Viewing Logs
 
@@ -74,23 +97,75 @@ StageGuard supports the following WP-CLI commands:
 - `wp stageguard debug_mode <on|off>`: Toggle debug mode on or off.
 - `wp stageguard show_log [--lines=<number>]`: Display the StageGuard log. Use the `--lines` option to specify the number of lines to show (default is 50).
 
+## Architecture
+
+StageGuard features a clean, modular architecture:
+
+```
+StageGuard/
+├── stageguard.php                    # Main plugin file
+└── includes/
+    ├── class-stageguard-admin.php    # Admin UI and settings
+    ├── class-stageguard-security.php # Password & IP protection
+    └── class-stageguard-cli.php      # WP-CLI commands
+```
+
+This separation of concerns makes the code:
+- Easier to maintain and test
+- More secure with focused responsibilities
+- Simpler to extend with new features
+
 ## Troubleshooting
 
 If you're having issues with StageGuard, check the following:
 
-1. Ensure that the web server has write permissions to the `wp-content` directory for logging.
-2. If you're not seeing the staging indicator, check if your theme is properly loading the `wp_head` action.
-3. If password protection isn't working, make sure you're not already logged in to WordPress.
+1. **Logging Issues**: Ensure that the web server has write permissions to the `wp-content` directory for logging.
+2. **Staging Indicator Not Showing**: Check if your theme is properly loading the `wp_head` action.
+3. **Password Protection Not Working**: Make sure you're not already logged in to WordPress. The protection only affects non-authenticated users.
+4. **IP Restriction Issues**:
+   - Verify your IP format is correct (use the formats shown in Configuration section)
+   - Check if you're behind a proxy - the plugin detects `X-Forwarded-For` headers
+   - Remember that `127.0.0.1` and `::1` are always whitelisted
+5. **robots.txt Not Updating**: The plugin uses WordPress's virtual robots.txt. If you have a physical `robots.txt` file, it will take precedence. Delete the physical file to use the plugin's filter.
 
-## License
+## Requirements
 
-This plugin is licensed under the GPL-2.0 License.
+- **WordPress**: 6.4 or higher
+- **PHP**: 8.0 or higher
+- **License**: GPL-2.0-or-later
+
+## Changelog
+
+### Version 1.0.0
+- Refactored plugin architecture with separated concerns
+- Added advanced IP restriction with CIDR notation support
+- Added IP range support (e.g., 192.168.1.1-192.168.1.10)
+- Added IPv6 support for IP restrictions
+- Improved robots.txt handling (filter-only, no file modification)
+- Enhanced security with better input sanitization
+- Smart proxy header detection for accurate IP identification
+- Automatic localhost whitelisting
+- Updated to Open-WP-Club ownership
+- Improved code documentation and PHPDoc blocks
+- Better error messages for access denied scenarios
+
+### Version 0.2.x
+- Initial release with basic staging protection features
+- Plugin deactivation on staging
+- Password protection and basic IP restriction
+- Email catching and logging
+- WP-CLI support
 
 ## Support
 
 For support, please open an issue on the [GitHub repository](https://github.com/Open-WP-Club/StageGuard/).
 
+## Contributing
+
+We welcome contributions! Please feel free to submit pull requests or open issues for bugs and feature requests.
+
 ## Author
 
-Open-WP-Club
-Website: <https://open-wp.club>
+**Open-WP-Club**
+- Website: <https://openwpclub.com>
+- GitHub: <https://github.com/Open-WP-Club>
