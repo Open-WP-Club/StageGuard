@@ -88,9 +88,9 @@ This plugin is licensed under the GPL-2.0 License.
 
 ## Support
 
-For support, please open an issue on the [GitHub repository](https://github.com/MrGKanev/StageGuard/).
+For support, please open an issue on the [GitHub repository](https://github.com/Open-WP-Club/StageGuard/).
 
 ## Author
 
-Gabriel Kanev
-Author URI: <https://gkanev.com>
+Open-WP-Club
+Website: <https://open-wp.club>

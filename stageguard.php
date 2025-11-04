@@ -1,14 +1,14 @@
 <?php
 /*
  * Plugin Name: StageGuard
- * Plugin URI: https://github.com/MrGKanev/StageGuard/
+ * Plugin URI: https://github.com/Open-WP-Club/StageGuard/
  * Description: Manages staging environment, including Coming Soon mode, search engine visibility, staging indicator, debug mode toggle, and robots.txt modification.
- * Version: 0.2.3
- * Author: Gabriel Kanev
- * Author URI: https://gkanev.com
- * License: GPL-2.0 License
- * Requires at least: 6.0
- * Requires PHP: 7.4
+ * Version: 1.0.0
+ * Author: OpenWPClub.com
+ * Author URI: https://openwpclub.com
+ * License: GPL-2.0-or-later
+ * Requires at least: 6.4
+ * Requires PHP: 8.0
  * Text Domain: stageguard
  */
 
@@ -120,7 +120,7 @@ class StageGuard
 
     public function stageguard_activation_notice()
     {
-        if (isset($_GET['stageguard_activation_error'])) {
+        if (isset($_GET['stageguard_activation_error']) && sanitize_text_field(wp_unslash($_GET['stageguard_activation_error'])) === 'true') {
             echo '<div class="notice notice-warning is-dismissible"><p>' . esc_html__('This plugin cannot be activated in the staging environment. Please deactivate StageGuard to enable this plugin.', 'stageguard') . '</p></div>';
         }
     }
@@ -226,14 +226,14 @@ class StageGuard
     public function stageguard_settings_page()
     {
         if (!current_user_can('manage_options')) {
-            wp_die(__('You do not have sufficient permissions to access this page.', 'stageguard'));
+            wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'stageguard'));
         }
 
         if (isset($_POST['stageguard_settings']) && check_admin_referer('stageguard_settings')) {
             $debug_mode = isset($_POST['debug_mode']);
             $password_protection = isset($_POST['password_protection']);
             $ip_restriction = isset($_POST['ip_restriction']);
-            $allowed_ips = sanitize_textarea_field($_POST['allowed_ips']);
+            $allowed_ips = isset($_POST['allowed_ips']) ? sanitize_textarea_field(wp_unslash($_POST['allowed_ips'])) : '';
 
             update_option('stageguard_debug_mode', $debug_mode);
             update_option('stageguard_password_protection', $password_protection);
@@ -248,7 +248,7 @@ class StageGuard
         $current_password_protection = get_option('stageguard_password_protection', false);
         $current_ip_restriction = get_option('stageguard_ip_restriction', false);
         $current_allowed_ips = get_option('stageguard_allowed_ips', '');
-        $current_user_ip = $_SERVER['REMOTE_ADDR'];
+        $current_user_ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
 
         ?>
         <div class="wrap">
@@ -350,7 +350,10 @@ class StageGuard
     {
         if (get_option('stageguard_password_protection', false)) {
             if (!is_user_logged_in() && !defined('DOING_CRON')) {
-                $current_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+                $protocol = is_ssl() ? 'https' : 'http';
+                $host = isset($_SERVER['HTTP_HOST']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_HOST'])) : '';
+                $request_uri = isset($_SERVER['REQUEST_URI']) ? sanitize_text_field(wp_unslash($_SERVER['REQUEST_URI'])) : '';
+                $current_url = $protocol . '://' . $host . $request_uri;
                 $login_url = wp_login_url();
 
                 // Check if we're not already on the login page to avoid redirect loops
@@ -367,10 +370,10 @@ class StageGuard
         if (get_option('stageguard_ip_restriction', false)) {
             $allowed_ips = explode("\n", get_option('stageguard_allowed_ips', ''));
             $allowed_ips = array_map('trim', $allowed_ips);
-            $current_ip = $_SERVER['REMOTE_ADDR'];
+            $current_ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
 
-            if (!in_array($current_ip, $allowed_ips) && !is_user_logged_in()) {
-                wp_die(__('Access denied. Your IP is not allowed to view this staging site.', 'stageguard'));
+            if (!in_array($current_ip, $allowed_ips, true) && !is_user_logged_in()) {
+                wp_die(esc_html__('Access denied. Your IP is not allowed to view this staging site.', 'stageguard'));
             }
         }
     }
