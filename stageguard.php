@@ -37,9 +37,9 @@ if ( file_exists( STAGEGUARD_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
 }
 
 // Load required classes.
-require_once STAGEGUARD_PLUGIN_DIR . 'includes/class-admin.php';
-require_once STAGEGUARD_PLUGIN_DIR . 'includes/class-security.php';
-require_once STAGEGUARD_PLUGIN_DIR . 'includes/class-logger.php';
+require_once STAGEGUARD_PLUGIN_DIR . 'includes/admin.php';
+require_once STAGEGUARD_PLUGIN_DIR . 'includes/security.php';
+require_once STAGEGUARD_PLUGIN_DIR . 'includes/logger.php';
 
 /**
  * Main StageGuard class.
@@ -423,6 +423,6 @@ add_action( 'plugins_loaded', __NAMESPACE__ . '\init' );
 
 // WP-CLI Support.
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
-	require_once STAGEGUARD_PLUGIN_DIR . 'includes/class-cli.php';
+	require_once STAGEGUARD_PLUGIN_DIR . 'includes/cli.php';
 	\WP_CLI::add_command( 'stageguard', __NAMESPACE__ . '\CLI' );
 }

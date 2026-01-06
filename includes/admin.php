@@ -90,12 +90,23 @@ class Admin {
 	 * @return void
 	 */
 	public function add_stageguard_menu(): void {
+		// Main settings page.
 		add_options_page(
 			__( 'StageGuard Settings', 'stageguard' ),
 			__( 'StageGuard', 'stageguard' ),
 			'manage_options',
 			'stageguard-settings',
 			array( $this, 'render_settings_page' )
+		);
+
+		// Logs submenu page.
+		add_submenu_page(
+			'options-general.php',
+			__( 'StageGuard Logs', 'stageguard' ),
+			__( 'StageGuard Logs', 'stageguard' ),
+			'manage_options',
+			'stageguard-logs',
+			array( $this, 'render_logs_page' )
 		);
 	}
 
@@ -316,6 +327,80 @@ class Admin {
 				submit_button( __( 'Save Settings', 'stageguard' ) );
 				?>
 			</form>
+
+			<hr>
+
+			<h2><?php esc_html_e( 'Quick Links', 'stageguard' ); ?></h2>
+			<p>
+				<a href="<?php echo esc_url( admin_url( 'options-general.php?page=stageguard-logs' ) ); ?>" class="button">
+					<?php esc_html_e( 'View Activity Logs', 'stageguard' ); ?>
+				</a>
+			</p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render the logs page.
+	 *
+	 * @return void
+	 */
+	public function render_logs_page(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'stageguard' ) );
+		}
+
+		// Handle clear logs action.
+		if ( isset( $_POST['stageguard_clear_logs'] ) && check_admin_referer( 'stageguard_clear_logs' ) ) {
+			$this->logger->clear_logs();
+			echo '<div class="notice notice-success is-dismissible"><p>' .
+				esc_html__( 'All logs have been cleared.', 'stageguard' ) .
+				'</p></div>';
+		}
+
+		$logs       = $this->logger->get_logs();
+		$logs_count = count( $logs );
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'StageGuard Activity Logs', 'stageguard' ); ?></h1>
+
+			<p>
+				<?php
+				printf(
+					/* translators: %d: number of log entries */
+					esc_html__( 'Showing %d log entries (maximum 1000 stored)', 'stageguard' ),
+					esc_html( $logs_count )
+				);
+				?>
+			</p>
+
+			<?php if ( ! empty( $logs ) ) : ?>
+				<form method="post" style="margin-bottom: 20px;">
+					<?php wp_nonce_field( 'stageguard_clear_logs' ); ?>
+					<input type="submit" name="stageguard_clear_logs" class="button button-secondary"
+						value="<?php esc_attr_e( 'Clear All Logs', 'stageguard' ); ?>"
+						onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to clear all logs?', 'stageguard' ); ?>');">
+				</form>
+
+				<table class="wp-list-table widefat fixed striped">
+					<thead>
+						<tr>
+							<th style="width: 180px;"><?php esc_html_e( 'Timestamp', 'stageguard' ); ?></th>
+							<th><?php esc_html_e( 'Message', 'stageguard' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $logs as $log ) : ?>
+							<tr>
+								<td><?php echo esc_html( $log['timestamp'] ); ?></td>
+								<td><?php echo esc_html( $log['message'] ); ?></td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+			<?php else : ?>
+				<p><?php esc_html_e( 'No logs found.', 'stageguard' ); ?></p>
+			<?php endif; ?>
 		</div>
 		<?php
 	}
