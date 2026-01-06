@@ -112,7 +112,7 @@ class Security {
 				continue;
 			}
 
-			$ip = sanitize_text_field( wp_unslash( $_SERVER[ $key ] ) );
+			$ip = trim( (string) wp_unslash( $_SERVER[ $key ] ) );
 
 			// For X-Forwarded-For, take the first IP (client IP).
 			if ( false !== strpos( $ip, ',' ) ) {
