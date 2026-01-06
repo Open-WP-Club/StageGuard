@@ -167,7 +167,6 @@ final class Plugin {
                     'redis-object-cache/redis-object-cache.php', // Redis Object Cache
                     'runcloud-hub/runcloud-hub.php', // RunCloud Hub
                     'google-site-kit/google-site-kit.php', // Site Kit by Google
-                    'google-listings-and-ads/google-listings-and-ads.php', // Google Listings and Ads
                     'super-page-cache-for-cloudflare/super-page-cache-for-cloudflare.php', // WP Cloudflare Page Cache older version
                     'wp-cloudflare-page-cache/wp-cloudflare-super-page-cache.php', // WP Cloudflare Page Cache newer version
                     'woocommerce-shipstation-integration/woocommerce-shipstation.php', // ShipStation
