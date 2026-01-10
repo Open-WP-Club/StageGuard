@@ -1,9 +1,12 @@
 <?php
+
 /**
  * Admin settings and interface for StageGuard
  *
  * @package StageGuard
  */
+
+declare(strict_types=1);
 
 if (!defined('ABSPATH')) {
     exit;
@@ -12,22 +15,22 @@ if (!defined('ABSPATH')) {
 /**
  * StageGuard Admin class
  */
-class StageGuard_Admin
+final class StageGuard_Admin
 {
     /**
      * Initialize the admin functionality
      */
     public function __construct()
     {
-        add_action('admin_menu', [$this, 'add_stageguard_menu']);
-        add_action('admin_notices', [$this, 'staging_env_notice']);
-        add_action('admin_notices', [$this, 'stageguard_activation_notice']);
+        add_action('admin_menu', $this->add_stageguard_menu(...));
+        add_action('admin_notices', $this->staging_env_notice(...));
+        add_action('admin_notices', $this->stageguard_activation_notice(...));
     }
 
     /**
      * Display staging environment notice
      */
-    public function staging_env_notice()
+    public function staging_env_notice(): void
     {
         if (!class_exists('WooCommerce')) {
             echo '<div class="notice notice-warning"><p>' . esc_html__('This website is a staging environment.', 'stageguard') . '</p></div>';
@@ -37,7 +40,7 @@ class StageGuard_Admin
     /**
      * Display plugin activation error notice
      */
-    public function stageguard_activation_notice()
+    public function stageguard_activation_notice(): void
     {
         if (isset($_GET['stageguard_activation_error']) && sanitize_text_field(wp_unslash($_GET['stageguard_activation_error'])) === 'true') {
             echo '<div class="notice notice-warning is-dismissible"><p>' . esc_html__('This plugin cannot be activated in the staging environment. Please deactivate StageGuard to enable this plugin.', 'stageguard') . '</p></div>';
@@ -47,21 +50,21 @@ class StageGuard_Admin
     /**
      * Add settings page to admin menu
      */
-    public function add_stageguard_menu()
+    public function add_stageguard_menu(): void
     {
         add_options_page(
             __('StageGuard Settings', 'stageguard'),
             __('StageGuard', 'stageguard'),
             'manage_options',
             'stageguard-settings',
-            [$this, 'render_settings_page']
+            $this->render_settings_page(...)
         );
     }
 
     /**
      * Render the settings page
      */
-    public function render_settings_page()
+    public function render_settings_page(): void
     {
         if (!current_user_can('manage_options')) {
             wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'stageguard'));
@@ -75,9 +78,18 @@ class StageGuard_Admin
     }
 
     /**
+     * Set debug mode - public method for CLI and external access
+     */
+    public function set_debug_mode(bool $enabled): bool
+    {
+        update_option('stageguard_debug_mode', $enabled);
+        return $this->update_wp_config('WP_DEBUG', $enabled);
+    }
+
+    /**
      * Save settings from form submission
      */
-    private function save_settings()
+    private function save_settings(): void
     {
         $debug_mode = isset($_POST['debug_mode']);
         $password_protection = isset($_POST['password_protection']);
@@ -93,8 +105,7 @@ class StageGuard_Admin
         $this->update_wp_config('WP_DEBUG', $debug_mode);
 
         // Log the action
-        $stageguard = StageGuard::get_instance();
-        $stageguard->log_action('Settings updated');
+        StageGuard::get_instance()->log_action('Settings updated');
 
         echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Settings saved successfully.', 'stageguard') . '</p></div>';
     }
@@ -102,7 +113,7 @@ class StageGuard_Admin
     /**
      * Display the settings form
      */
-    private function display_settings_form()
+    private function display_settings_form(): void
     {
         $current_debug_mode = get_option('stageguard_debug_mode', true);
         $current_password_protection = get_option('stageguard_password_protection', false);
@@ -163,24 +174,25 @@ class StageGuard_Admin
 
     /**
      * Update wp-config.php with a constant value
-     *
-     * @param string $constant The constant name
-     * @param bool   $value    The value to set
      */
-    private function update_wp_config($constant, $value)
+    private function update_wp_config(string $constant, bool $value): bool
     {
         if (!current_user_can('manage_options')) {
-            return;
+            return false;
         }
 
         $wp_config_file = ABSPATH . 'wp-config.php';
 
         if (!is_writable($wp_config_file)) {
             add_settings_error('stageguard', 'file_not_writable', __('wp-config.php is not writable. Please check file permissions.', 'stageguard'));
-            return;
+            return false;
         }
 
         $config_content = file_get_contents($wp_config_file);
+        if ($config_content === false) {
+            return false;
+        }
+
         $value_to_put = $value ? 'true' : 'false';
 
         if (preg_match("/define\s*\(\s*(['\"])$constant\\1\s*,\s*(.+?)\s*\);/", $config_content)) {
@@ -195,6 +207,9 @@ class StageGuard_Admin
 
         if (file_put_contents($wp_config_file, $config_content) === false) {
             add_settings_error('stageguard', 'file_not_updated', __('Failed to update wp-config.php. Please check file permissions.', 'stageguard'));
+            return false;
         }
+
+        return true;
     }
 }
