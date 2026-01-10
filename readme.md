@@ -96,24 +96,10 @@ StageGuard supports the following WP-CLI commands:
 
 - `wp stageguard debug_mode <on|off>`: Toggle debug mode on or off.
 - `wp stageguard show_log [--lines=<number>]`: Display the StageGuard log. Use the `--lines` option to specify the number of lines to show (default is 50).
-
-## Architecture
-
-StageGuard features a clean, modular architecture:
-
-```
-StageGuard/
-├── stageguard.php                    # Main plugin file
-└── includes/
-    ├── class-stageguard-admin.php    # Admin UI and settings
-    ├── class-stageguard-security.php # Password & IP protection
-    └── class-stageguard-cli.php      # WP-CLI commands
-```
-
-This separation of concerns makes the code:
-- Easier to maintain and test
-- More secure with focused responsibilities
-- Simpler to extend with new features
+- `wp stageguard status`: Shows current status.
+- `wp stageguard password_protection`: Toggle password protection on or off.
+- `wp stageguard ip_restriction`: Toggle IP restrictions on or off.
+- `wp stageguard show_log --clear`: Clearing logs.
 
 ## Troubleshooting
 
@@ -134,28 +120,6 @@ If you're having issues with StageGuard, check the following:
 - **PHP**: 8.0 or higher
 - **License**: GPL-2.0-or-later
 
-## Changelog
-
-### Version 1.0.0
-- Refactored plugin architecture with separated concerns
-- Added advanced IP restriction with CIDR notation support
-- Added IP range support (e.g., 192.168.1.1-192.168.1.10)
-- Added IPv6 support for IP restrictions
-- Improved robots.txt handling (filter-only, no file modification)
-- Enhanced security with better input sanitization
-- Smart proxy header detection for accurate IP identification
-- Automatic localhost whitelisting
-- Updated to Open-WP-Club ownership
-- Improved code documentation and PHPDoc blocks
-- Better error messages for access denied scenarios
-
-### Version 0.2.x
-- Initial release with basic staging protection features
-- Plugin deactivation on staging
-- Password protection and basic IP restriction
-- Email catching and logging
-- WP-CLI support
-
 ## Support
 
 For support, please open an issue on the [GitHub repository](https://github.com/Open-WP-Club/StageGuard/).
@@ -163,9 +127,3 @@ For support, please open an issue on the [GitHub repository](https://github.com/
 ## Contributing
 
 We welcome contributions! Please feel free to submit pull requests or open issues for bugs and feature requests.
-
-## Author
-
-**Open-WP-Club**
-- Website: <https://openwpclub.com>
-- GitHub: <https://github.com/Open-WP-Club>
