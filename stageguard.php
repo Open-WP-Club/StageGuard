@@ -2,6 +2,7 @@
 
 /**
  * Plugin Name: StageGuard
+ * Tested up to: 7.1.4
  * Plugin URI: https://github.com/Open-WP-Club/StageGuard/
  * Description: Manages staging environment, including Coming Soon mode, search engine visibility, staging indicator, debug mode toggle, and robots.txt modification.
  * Version: 1.1.1
